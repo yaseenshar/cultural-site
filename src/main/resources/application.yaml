@@ -1,0 +1,34 @@
+ktor:
+  application:
+    modules:
+      - com.m3sy.ktor.explorer.cultural.ApplicationKt.module
+  deployment:
+    port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cultural-explorer
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+jwt:
+  secret: your-256-bit-secret-which-is-very-secure
+  issuer: demo-app
+  expiration-ms: 3600000
+
+logging:
+  level:
+    root: INFO
+    com.m3sy.ktor.explorer.cultural: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    enabled: true
