@@ -12,12 +12,19 @@ class SiteService(
     private val mapper: SiteMapper
 ) {
 
-    fun getAll(): List<Site> = siteRepository.findAll()
+    fun getAll(): List<SiteDto> {
+        return siteRepository.findAll().map { mapper.toResponse(it) }
+    }
 
-    fun  getById(id: Long): Site = siteRepository.findById(id)
-        .orElseThrow { RuntimeException("Site not found") }
+    fun getById(id: Long): SiteDto {
+        return siteRepository.findById(id)
+            .map { mapper.toResponse(it) }
+            .orElseThrow { RuntimeException("Site not found") }
+    }
 
-    fun getByType(type: Site.TYPE): List<Site> = siteRepository.findAllByType(type)
+    fun getByType(type: Site.TYPE): List<SiteDto> {
+        return siteRepository.findAllByType(type).map { mapper.toResponse(it) }
+    }
 
     fun save(siteDto: SiteDto) {
         val entity = mapper.toEntity(siteDto)
