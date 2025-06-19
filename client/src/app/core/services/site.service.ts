@@ -42,14 +42,14 @@ export class SiteService {
       map(rawSites => {
         this.favoriteIds.clear(); // reset before assigning new
         const parsedSites = rawSites.map(site => {
-          this.favoriteIds.add(site.id); // 🔥 store the ID
+          this.favoriteIds.add(site.siteId); // 🔥 store the ID
           return {
+            siteId: site.siteId,
             id: site.id,
-            dataId: site.dataId,
             type: site.type,
             favourite: true,
-            properties: JSON.parse(site.properties),
-            geometry: JSON.parse(site.geometry),
+            properties: site.properties,
+            geometry: site.geometry,
           };
         });
         return parsedSites;
@@ -62,12 +62,12 @@ export class SiteService {
     return this.http.get<RawSite[]>(this.apiUrl).pipe(
       map(rawSites =>
         rawSites.map(site => ({
+          siteId: site.siteId,
           id: site.id,
-          dataId: site.dataId,
           type: site.type,
-          favourite: this.favoriteIds.has(site.id), // ✅ check from Set
-          properties: JSON.parse(site.properties),
-          geometry: JSON.parse(site.geometry),
+          favourite: this.favoriteIds.has(site.siteId), // ✅ check from Set
+          properties: site.properties,
+          geometry: site.geometry,
         }))
       )
     );

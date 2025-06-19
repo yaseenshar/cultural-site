@@ -1,15 +1,15 @@
 export interface RawSite {
+  siteId: string;
   id: string;
-  dataId: string;
   type: string;
   favourite: boolean;
-  properties: string; // JSON string
-  geometry: string;   // JSON string
+  properties: any; // JSON string
+  geometry: any;   // JSON string
 }
 
 export interface Site {
+  siteId: string;
   id: string;
-  dataId: string;
   type: string;
   favourite: boolean;
   properties: Record<string, any>;

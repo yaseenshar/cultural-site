@@ -6,6 +6,7 @@ import { MATERIAL_IMPORTS } from './material';
 import { NavbarComponent } from './shared/layout/navbar/navbar.component';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { FormsModule } from '@angular/forms';
+import { FooterComponent } from './shared/footers/footer/footer.component';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,7 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     RouterOutlet,
     NavbarComponent,
+    FooterComponent,
     GoogleMapsModule,
     FormsModule,
     ...MATERIAL_IMPORTS

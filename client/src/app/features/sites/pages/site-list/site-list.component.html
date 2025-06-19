@@ -110,7 +110,7 @@
         </td>
         <td class="px-6 py-4">
           <a href="#" class="text-blue-600 dark:text-blue-500 hover:underline">Edit user</a>
-          <button (click)="toggleFavorite(site.id)">
+          <button (click)="toggleFavorite(site.siteId)">
             {{ site.favourite ? '❤️' : '🤍' }}
           </button>
         </td>
@@ -175,5 +175,3 @@
 </nav>
 
 </div>
-
-<app-footer></app-footer>

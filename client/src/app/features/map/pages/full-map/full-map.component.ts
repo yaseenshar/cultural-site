@@ -35,12 +35,6 @@ export class FullMapComponent implements OnInit, AfterViewInit {
   zoom: number = 12;
   center2 = "50.83316673402464, 12.921378299117935";
 
-  sites = [
-    { id: '1', name: 'Karl-Marx-Monument', lat: 50.836419160526575, lng: 12.926098986648274, location: { lat: 50.836419160526575, lng: 12.926098986648274 } },
-    { id: '2', name: 'Kunstsammlungen Museum', lat: 50.82948037665223, lng: 12.915498897375603, location: { lat: 50.82948037665223, lng: 12.915498897375603 } },
-    { id: '3', name: 'Chemnitz Opera', lat: 50.83316673402464, lng: 12.921378299117935, location: { lat: 50.83316673402464, lng: 12.921378299117935 } },
-  ];
-
   async ngOnInit() {
     await this.loadSites(); 
     // Initialization logic can go here
@@ -67,56 +61,22 @@ export class FullMapComponent implements OnInit, AfterViewInit {
       center,
       mapId: "4504f8b37365c3d0",
     });
-
-
-    /*for (const site of this.properties) {
-      const marker = new google.maps.marker.AdvancedMarkerElement({
-        map,
-        content: this.buildContent(site),
-        position: site.position,
-        title: site.description,
-      });
-*/
-
-    /* const marker = new AdvancedMarkerElement({
-        map,
-        content: this.buildContent(site),
-        position: site.position
-    }); */
-
-/*
-       marker.addListener("click", () => {
-        this.toggleHighlight(marker, site);
-      });
-    }
-*/
     
-
     for (const site of this.siteList) {
       const marker = new google.maps.marker.AdvancedMarkerElement({
         map,
         content: this.buildContent(site),
-        //position: { lat: 50.83316673402464, lng: 12.921378299117935 },
-        position: {lat: site.geometry.coordinates[1], lng: site.geometry.coordinates[0]}, // Assuming coordinates are in [lat, lng] format
+        position: {lat: site.geometry.coordinates[1], lng: site.geometry.coordinates[0]},
         title: site.properties['name'],
       });
 
-
-    /* const marker = new AdvancedMarkerElement({
-        map,
-        content: this.buildContent(site),
-        position: site.position
-    }); */
-
-
-       marker.addListener("click", () => {
+      marker.addListener("click", () => {
         this.toggleHighlight(marker, site);
       });
     }
   }
 
   loadSites() {
-    
     this.siteService.getAll().subscribe(rawSites => {
       this.siteList = rawSites;
     });
@@ -139,10 +99,10 @@ export class FullMapComponent implements OnInit, AfterViewInit {
     content.innerHTML = `
       <div class="icon">
           <i aria-hidden="true" class="fa fa-icon fa-${property.type}" title="${property.type}"></i>
-          <span class="fa-sr-only">${property.type}</span>
+          <span class="fa-sr-only">${property.properties['name']}</span>
       </div>
       <div class="details">
-          <div class="price">${property.price}</div>
+          <div class="price">${property.properties['name']} - ${property.price}</div>
           <div class="address">${property.address}</div>
           <div class="features">
           <div>
