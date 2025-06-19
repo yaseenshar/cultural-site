@@ -20,14 +20,19 @@ import org.springframework.web.bind.annotation.RestController
 class SiteController (private val siteService: SiteService) {
 
     @GetMapping
-    fun getAll(): List<Site> = siteService.getAll()
+    fun getAll(): ResponseEntity<List<SiteDto>> {
+        return ResponseEntity.ok(siteService.getAll())
+    }
 
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): Site = siteService.getById(id)
+    fun getById(@PathVariable id: Long): ResponseEntity<SiteDto> {
+        return ResponseEntity.ok(siteService.getById(id))
+    }
 
     @GetMapping("/type/{type}")
-    fun getByStatus(@PathVariable type: Site.TYPE): List<Site> =
-        siteService.getByType(type)
+    fun getByStatus(@PathVariable type: Site.TYPE): ResponseEntity<List<SiteDto>> {
+        return ResponseEntity.ok(siteService.getByType(type))
+    }
 
     @PostMapping
     fun uploadSingleSite(@RequestBody site: SiteDto): ResponseEntity<String> {

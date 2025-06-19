@@ -1,24 +1,26 @@
 package com.m3sy.ktor.explorer.cultural.dto.site
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.m3sy.ktor.explorer.cultural.dto.site.request.SiteDto
 import com.m3sy.ktor.explorer.cultural.model.Site
 import org.springframework.stereotype.Component
+import com.fasterxml.jackson.databind.ObjectMapper
 
 @Component
-class SiteMapper() {
+class SiteMapper(private val mapper: ObjectMapper) {
 
     fun toEntity(dtoSite : SiteDto): Site = Site(
-        dataId = dtoSite.dataId,
+        dataId = dtoSite.id,
         type = Site.TYPE.valueOf(dtoSite.type.uppercase()),
-        properties = dtoSite.properties,
-        geometry = dtoSite.geometry
+        properties = mapper.writeValueAsString(dtoSite.properties),
+        geometry = mapper.writeValueAsString(dtoSite.geometry)
     )
 
     fun toResponse(site : Site): SiteDto = SiteDto(
-        id = site.id,
-        dataId = site.dataId,
+        siteId = site.id,
+        id = site.dataId,
         type = site.type.name,
-        properties = site.properties,
-        geometry = site.geometry
+        properties = mapper.readValue(site.properties, object : TypeReference<Map<String, Any>>() {}),
+        geometry = mapper.readValue(site.geometry, object : TypeReference<Map<String, Any>>() {})
     )
 }
