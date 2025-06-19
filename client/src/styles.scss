@@ -4,3 +4,12 @@
 
 // Optional: Override Angular Material default theme if needed
 // You can leave Material SCSS out entirely if you don't want any theme
+
+a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+
+// maps styles to the Angular components
+@import './app/features/map/map.component.scss';
