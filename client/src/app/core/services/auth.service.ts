@@ -32,9 +32,9 @@ export class AuthService {
 
   }
 
-  register(email: string, password: string): Observable<AuthResponse> {
-    const user = { id: '2', email, name: 'New User' };
-    return this.http.post<AuthResponse>(`${this.api}/register`, user).pipe(
+  register(firstName: string, lastName: string, email: string, password: string): Observable<AuthResponse> {
+    const user = { firstName, lastName, email, password};
+    return this.http.post<AuthResponse>(`${this.api}/signup`, user).pipe(
       tap((res) => this.handleAuthSuccess(res))
     );
   }

@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { Site } from '../../../../data/model/site.model';
 import { User } from '../../../../data/model/user.model';
 import { AuthService } from '../../../../core/services/auth.service';
-import { FooterComponent } from "../../../../shared/footers/footer/footer.component";
+import { FooterComponent } from '../../../../shared/footers/footer/footer.component';
 
 @Component({
   selector: 'app-site-list',
@@ -16,8 +16,7 @@ import { FooterComponent } from "../../../../shared/footers/footer/footer.compon
     RouterModule,
     FormsModule,
     CommonModule,
-    FooterComponent
-],
+  ],
   templateUrl: './site-list.component.html',
   styleUrl: './site-list.component.scss'
 })
