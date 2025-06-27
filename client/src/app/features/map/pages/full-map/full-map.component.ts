@@ -12,6 +12,7 @@ import { Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { SiteService } from '../../../../core/services/site.service';
 import { Site } from '../../../../data/model/site.model';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
@@ -20,7 +21,8 @@ import { Site } from '../../../../data/model/site.model';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     GoogleMapsModule,
-    CommonModule
+    CommonModule,
+    FormsModule
   ],
   templateUrl: './full-map.component.html',
   styleUrl: './full-map.component.scss'
@@ -29,14 +31,20 @@ export class FullMapComponent implements OnInit, AfterViewInit {
   title = 'Cultural Site Explorer';
   description = 'Explore cultural sites around the world with detailed information and images.';
 
-  @Input() site?: Site;
+  @Input() site: Site | null = null;
+
+  categoryList = ['MUSEUM', 'RESTAURANT', 'ARTWORK', 'THEATRE'];
+  selectedCategories: string[] = [...this.categoryList];
+  searchText = '';
+  showFavoritesOnly = false;
+
+  allSites: Site[] = [];
+  filteredSites: Site[] = [];
+  map!: google.maps.Map;
+  markerMap: Map<string, google.maps.marker.AdvancedMarkerElement> = new Map();
 
   center = { lat: 50.833, lng: 12.921 }; // Set default center coordinates for checmnitz 50.83316673402464, 12.921378299117935
   zoom: number = 12;
-
-  async ngOnInit() {
-    
-  }
 
   siteList: Site[] = [];
 
@@ -45,12 +53,18 @@ export class FullMapComponent implements OnInit, AfterViewInit {
     private siteService: SiteService
   ) { }
 
+  ngOnInit() {
+    
+  }
+
   async ngAfterViewInit() {
 
     if (!isPlatformBrowser(this.platformId))
       return;
 
     await loadGoogleMapsApi(); // 🔐 Ensures google is defined
+
+    await this.buildMarkerViews();
 
     await this.loadSites();
   }
@@ -61,42 +75,84 @@ export class FullMapComponent implements OnInit, AfterViewInit {
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
 
     const center = { lat: 50.833, lng: 12.921 };
-    const map = new Map(document.getElementById("map") as HTMLElement, {
+    this.map = new Map(document.getElementById("map") as HTMLElement, {
       zoom: 11,
       center,
       mapId: "4504f8b37365c3d0",
     });
 
     console.log('Google Maps API loaded successfully');
-    console.log('Site List:', this.siteList.length);
     
-    for (const site of this.siteList) {
-
-      const content = this.buildContent(site);
-
-      const marker = new AdvancedMarkerElement({
-        map,
-        content: content,
-        position: { lat: site.geometry.coordinates[1], lng: site.geometry.coordinates[0] },
-        title: site.properties['name'],
-      });
-
-      marker.addListener("click", () => {
-        this.toggleHighlight(marker, site);
-      });
-    }
   }
 
   loadSites() {
     if (this.site) {
-      this.siteList = [this.site];
-      this.buildMarkerViews();
+      this.filteredSites = [this.site];
     } else {
-      this.siteService.getAll().subscribe(rawSites => {
-        this.siteList = rawSites;
-        this.buildMarkerViews();
+      this.siteService.getAll().subscribe((sites) => {
+        this.allSites = sites;
+        this.applyFilters();
       });
     }
+  }
+
+  onCategoryChange(category: string) {
+    if (this.selectedCategories.includes(category)) {
+      this.selectedCategories = this.selectedCategories.filter(c => c !== category);
+    } else {
+      this.selectedCategories.push(category);
+    }
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    const query = this.searchText.toLowerCase();
+
+    this.filteredSites = this.allSites.filter(site => {
+      const matchCategory = this.selectedCategories.includes(site.category || '');
+      const matchSearch = site.properties?.['name']?.toLowerCase().includes(query);
+      const matchFav = this.showFavoritesOnly ? site.favourite : true;
+
+      return matchCategory && matchSearch && matchFav;
+    });
+
+    this.updateMapMarkers();
+  }
+
+  updateMapMarkers() {
+
+    if (!this.map) return;
+
+
+    const filteredIds = new Set(this.filteredSites.map(site => site.id));
+
+    // Remove markers for sites no longer in filteredSites
+    for (const [id, marker] of this.markerMap.entries()) {
+      if (!filteredIds.has(id)) {
+        marker.map = null;
+        this.markerMap.delete(id);
+      }
+    }
+    
+    console.log('Site List:', this.siteList.length);
+
+    // Add markers for new filteredSites
+    for (const site of this.filteredSites) {
+      if (!this.markerMap.has(site.id)) {
+        const content = this.buildContent(site);
+        const marker = new google.maps.marker.AdvancedMarkerElement({
+          map: this.map,
+          content: content,
+          position: { lat: site.geometry.coordinates[1], lng: site.geometry.coordinates[0] },
+          title: site.properties['name'],
+        });
+        marker.addListener("click", () => {
+          this.toggleHighlight(marker, site);
+        });
+        this.markerMap.set(site.id, marker);
+      }
+    }
+    
   }
 
   toggleHighlight(markerView: any, site: Site) {
@@ -150,5 +206,12 @@ export class FullMapComponent implements OnInit, AfterViewInit {
     </div>
   `;
     return content;
+  }
+
+  resetFilters() {
+    this.searchText = '';
+    this.selectedCategories = [...this.categoryList];
+    this.showFavoritesOnly = false;
+    this.applyFilters();
   }
 }

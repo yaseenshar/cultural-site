@@ -90,7 +90,8 @@
           <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded" />
         </th>
         <th class="px-6 py-3">Name</th>
-        <th class="px-6 py-3">Position</th>
+        <th class="px-6 py-3">Location</th>
+        <th class="px-6 py-3">Category</th>
         <th class="px-6 py-3">Status</th>
         <th class="px-6 py-3">Action</th>
       </tr>
@@ -110,7 +111,8 @@
             <div class="text-gray-500">{{ site.properties['name'] }}</div>
           </div>
         </th>
-        <td class="px-6 py-4">{{ site.properties['name'] }}</td>
+        <td class="px-6 py-4">{{ site.properties['addr:street'] }}</td>
+        <td class="px-6 py-4">{{ site.category }}</td>
         <td class="px-6 py-4">
           <div class="flex items-center">
             <div
@@ -119,7 +121,8 @@
             ></div>
             {{ site.favourite ? 'Favourite' : 'Inactive' }}
           </div>
-          <button (click)="toggleFavorite(site.siteId)">
+          <button (click)="toggleFavorite(site)"
+           class="transition-transform duration-200 hover:scale-110">
             {{ site.favourite ? '❤️' : '🤍' }}
           </button>
         </td>
