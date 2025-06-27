@@ -66,6 +66,7 @@ export class SiteService {
           siteId: site.siteId,
           id: site.id,
           type: site.type,
+          category: site.category as SiteCategory,
           favourite: this.favoriteIds.has(site.siteId), // ✅ check from Set
           properties: site.properties,
           geometry: site.geometry,
@@ -96,6 +97,7 @@ export class SiteService {
           siteId: rawSite.siteId,
           id: rawSite.id,
           type: rawSite.type,
+          category: rawSite.category as SiteCategory,
           favourite: this.favoriteIds.has(rawSite.siteId),
           properties: typeof rawSite.properties === 'string' ? JSON.parse(rawSite.properties) : rawSite.properties,
           geometry: typeof rawSite.geometry === 'string' ? JSON.parse(rawSite.geometry) : rawSite.geometry,

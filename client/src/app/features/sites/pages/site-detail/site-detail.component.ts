@@ -3,11 +3,13 @@ import { ActivatedRoute } from '@angular/router';
 import { SiteService } from '../../../../core/services/site.service';
 import { Site } from '../../../../data/model/site.model';
 import { CommonModule } from '@angular/common';
+import { FullMapComponent } from "../../../map/pages/full-map/full-map.component";
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-site-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FullMapComponent],
   templateUrl: './site-detail.component.html',
   styleUrls: ['./site-detail.component.scss']
 })
@@ -18,8 +20,13 @@ export class SiteDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private siteService: SiteService
-  ) {}
+    private siteService: SiteService, 
+    private location: Location
+  ) { }
+
+  goBack() {
+    this.location.back(); // Go to previous page
+  }
 
   ngOnInit() {
     this.siteId = this.route.snapshot.paramMap.get('id')!;

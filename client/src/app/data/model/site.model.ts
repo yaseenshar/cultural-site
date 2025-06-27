@@ -3,6 +3,7 @@ export interface RawSite {
   id: string;
   type: string;
   favourite: boolean;
+  category?: string;
   properties: any; // JSON string
   geometry: any;   // JSON string
 }
