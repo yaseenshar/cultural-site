@@ -7,4 +7,5 @@ class JwtConfig {
     lateinit var secret: String
     lateinit var issuer: String
     var expirationMs: Long = 0
+    var refreshExpirationMs: Long = 0
 }

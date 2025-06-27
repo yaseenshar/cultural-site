@@ -11,9 +11,10 @@ class JwtTokenProvider(private val config: JwtConfig) {
 
     private val key = SecretKeySpec(config.secret.toByteArray(), SignatureAlgorithm.HS256.jcaName)
 
-    fun createToken(username: String): String {
+    fun createToken(username: String, role: String): String {
         val token = Jwts.builder()
             .setSubject(username)
+            .claim("role", role)
             .setIssuer(config.issuer)
             .setIssuedAt(Date())
             .setExpiration(Date(System.currentTimeMillis() + config.expirationMs))
@@ -22,13 +23,29 @@ class JwtTokenProvider(private val config: JwtConfig) {
         return token
     }
 
+    fun createRefreshToken(username: String): String =
+        Jwts.builder()
+            .setSubject(username)
+            .setIssuer(config.issuer)
+            .setIssuedAt(Date())
+            .setExpiration(Date(System.currentTimeMillis() + config.refreshExpirationMs))
+            .signWith(SignatureAlgorithm.HS256, key)
+            .compact()
 
-    fun validateToken(token: String): String {
-        try {
-            val body = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).body
-            return body.subject
-        } catch (e: JwtException) {
-            throw RuntimeException("Invalid JWT token")
-        }
+    fun isExpired(token: String): Boolean =
+        parseClaims(token).expiration.before(Date())
+
+    fun parseClaims(token: String): Claims {
+            return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .body
+
+    }
+
+    fun validateTokenAndGetUsername(token: String): String {
+        val claims = parseClaims(token)
+        return claims.subject
     }
 }

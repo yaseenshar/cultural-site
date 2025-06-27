@@ -22,9 +22,9 @@ class AuthService(
     fun signup(dto: CreateUserDto): AuthResponse {
         if (userRepository.findByEmail(dto.email) != null)
             throw RuntimeException("Username already exists")
-        val user = User(lastName = dto.lastName, firstName = dto.firstName, email = dto.email, password = encoder.encode(dto.password), status = User.Status.ACTIVE)
+        val user = User(lastName = dto.lastName, firstName = dto.firstName, email = dto.email, password = encoder.encode(dto.password), role = User.Role.USER, status = User.Status.ACTIVE)
         userRepository.save(user)
-        val token = jwtProvider.createToken(user.email)
+        val token = jwtProvider.createToken(user.email, user.role.name)
         return AuthResponse(token, token, userMapper.toResponse(user))
     }
 
@@ -33,7 +33,33 @@ class AuthService(
             ?: throw RuntimeException("Invalid credentials")
         if (!encoder.matches(dto.password, user.password))
             throw RuntimeException("Invalid credentials")
-        val token = jwtProvider.createToken(user.email)
-        return AuthResponse(token, token, userMapper.toResponse(user))
+
+        val accessToken = jwtProvider.createToken(user.email, user.role.name)
+        val refreshToken = jwtProvider.createRefreshToken(user.email)
+
+        user.refreshToken = refreshToken
+        userRepository.save(user)
+
+        return AuthResponse(accessToken, refreshToken, userMapper.toResponse(user))
+    }
+
+    fun logout(email: String) {
+        val user = userRepository.findByEmail(email)
+            ?: throw RuntimeException("User not found")
+        user.refreshToken = null
+        userRepository.save(user)
+    }
+
+    fun validateTokenAndGetUsername(refreshToken: String): AuthResponse {
+
+        val email = jwtProvider.validateTokenAndGetUsername(refreshToken)
+        val user = userRepository.findByEmail(email)
+            ?: throw RuntimeException("User not found")
+
+        if (user.refreshToken != refreshToken || jwtProvider.isExpired(refreshToken))
+            throw RuntimeException("Invalid or expired refresh token")
+
+        val accessToken = jwtProvider.createToken(user.email, user.role.name)
+        return AuthResponse(accessToken, refreshToken, userMapper.toResponse(user))
     }
 }

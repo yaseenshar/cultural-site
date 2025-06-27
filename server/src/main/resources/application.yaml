@@ -18,7 +18,8 @@ spring:
 jwt:
   secret: your-256-bit-secret-which-is-very-secure
   issuer: demo-app
-  expiration-ms: 3600000
+  expiration-ms: 900000           # 15 minutes
+  refresh-expiration-ms: 2592000000  # 30 days
 
 logging:
   level:

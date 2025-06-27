@@ -12,5 +12,6 @@ data class UserDto(
     val email: String,
     val password: String,
     var status: User.Status,
+    val role: User.Role,
     val createdAt: String
 )

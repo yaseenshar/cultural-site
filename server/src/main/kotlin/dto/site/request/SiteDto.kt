@@ -4,6 +4,11 @@ data class SiteDto(
     val siteId: Long,
     val id: String,
     val type: String = "FEATURE",
+    val category: CategoryType,
     val properties: Map<String, Any>,
     val geometry: Map<String, Any>
 )
+
+enum class CategoryType {
+    MUSEUM, ARTWORK, THEATRE, RESTAURANT, OTHER
+}
