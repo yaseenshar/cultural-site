@@ -1,6 +1,4 @@
-
-
-<div *ngFor="let site of siteList" class="p-4 border rounded my-2">
+<!-- <div *ngFor="let site of siteList" class="p-4 border rounded my-2">
   <h3 class="font-bold text-lg">{{ site.properties['name'] || 'Unnamed Site' }}</h3>
   <p class="text-sm text-gray-500">Type: {{ site.type }}</p>
 
@@ -13,13 +11,27 @@
   <p class="mt-2 text-xs text-gray-500">
     Location: {{ site.geometry.coordinates[1] }}, {{ site.geometry.coordinates[0] }}
   </p>
-</div>
-
+</div> -->
 
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
   <div class="flex flex-wrap items-center justify-between gap-4 p-4 bg-white dark:bg-gray-900">
     <div class="relative">
+      
+      <div class="flex flex-wrap gap-3 p-4">
         <button
+          *ngFor="let cat of allCategories"
+          (click)="cat === 'ALL' ? siteList = flattenSites() : filterByCategory(cat)"
+          [ngClass]="{
+            'bg-blue-600 text-white': selectedCategory === cat,
+            'bg-white text-gray-800': selectedCategory !== cat
+          }"
+          class="px-3 py-1 border rounded shadow-sm hover:bg-blue-100 transition"
+        >
+          {{ cat }}
+        </button>
+      </div>
+      
+      <button
             (click)="toggleDropdown()"
             type="button"
             class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700"
@@ -107,12 +119,12 @@
             ></div>
             {{ site.favourite ? 'Favourite' : 'Inactive' }}
           </div>
-        </td>
-        <td class="px-6 py-4">
-          <a href="#" class="text-blue-600 dark:text-blue-500 hover:underline">Edit user</a>
           <button (click)="toggleFavorite(site.siteId)">
             {{ site.favourite ? '❤️' : '🤍' }}
           </button>
+        </td>
+        <td class="px-6 py-4">
+          <a [routerLink]="['/sites', site.siteId]" class="text-blue-600 dark:text-blue-500 hover:underline">View Details</a>
         </td>
       </tr>
     </tbody>

@@ -1,20 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UserService } from '../../../../core/services/user.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { User } from '../../../../data/model/user.model';
-import { FooterComponent } from "../../../../shared/footers/footer/footer.component";
 
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, FooterComponent],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.scss'
 })
 export class EditProfileComponent implements OnInit {
+
+  user: User | null = null;
+  currentUser: User | null = null;
+  userId: string = '';
+  isAdminView = false;
 
   form!: FormGroup;
   loading = false;
@@ -23,13 +27,20 @@ export class EditProfileComponent implements OnInit {
     private fb: FormBuilder,
     private userService: UserService,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    const currentUser = this.auth.getCurrentUser();
-    if (!currentUser) {
-      this.router.navigate(['/auth']);
+
+    this.currentUser = this.auth.getCurrentUser();
+
+    this.userId = this.route.snapshot.paramMap.get('id') || this.currentUser?.userId!;
+
+    this.isAdminView = this.route.snapshot.url[0]?.path === 'users';
+
+    if (!this.currentUser || (!this.isAdminView && this.userId !== this.currentUser.userId)) {
+      this.router.navigate(['admin/unauthorized']);
       return;
     }
 
@@ -38,9 +49,14 @@ export class EditProfileComponent implements OnInit {
       lastName: ['', Validators.required],
       email: [{ value: '', disabled: true }, [Validators.required, Validators.email]],
       status: [''],
+      address: [''],
+      city: [''],
+      country: [''],
+      postalCode: [''],
+      about: [''],
     });
 
-    this.loadProfile(currentUser.userId);
+    this.loadProfile(this.userId);
   }
 
   loadProfile(userId: string) {
@@ -60,18 +76,18 @@ export class EditProfileComponent implements OnInit {
         this.loading = false;
       },
     });
+    console.log('Form values after patch:', this.form.value);
   }
 
   save() {
     if (this.form.invalid) return;
 
     const updatedData = this.form.getRawValue();
-    const userId = this.auth.getCurrentUser()?.userId;
 
-    this.userService.updateUserProfile(userId, updatedData).subscribe({
+    this.userService.updateUserProfile(this.userId, updatedData).subscribe({
       next: () => {
         alert('Profile updated successfully!');
-        this.router.navigate(['/profile']);
+        this.goToProfile();
       },
       error: () => {
         alert('Update failed.');
@@ -80,6 +96,9 @@ export class EditProfileComponent implements OnInit {
   }
 
   goToProfile() {
-    this.router.navigate(['/profile']);
+    const path = this.isAdminView
+      ? `/admin/users/${this.userId}`
+      : `/profile`;
+    this.router.navigate([path]);
   }
 }

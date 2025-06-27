@@ -3,11 +3,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../../core/services/user.service';
 import { User } from '../../../../data/model/user.model';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })
@@ -66,7 +67,7 @@ export class UsersComponent implements OnInit {
   userList: User[] = []; 
 
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService, private router: Router) {}
 
   ngOnInit() {
     // Load users from the service if needed

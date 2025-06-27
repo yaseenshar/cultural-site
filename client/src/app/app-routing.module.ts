@@ -27,5 +27,6 @@ export const routes: Routes = [
     path: 'admin',
     loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
   },
-  { path: '**', redirectTo: 'home' }
+  /* { path: '**', redirectTo: 'home' }, */
+  { path: '**', loadComponent: () => import('./shared/errors/not-found.component').then(m => m.NotFoundComponent) } // ✅ Catch-all
 ];

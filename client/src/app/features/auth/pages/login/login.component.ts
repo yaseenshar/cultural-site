@@ -3,6 +3,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { AuthModalService } from '../../../../core/services/auth-modal.service';
 
 @Component({
   selector: 'app-login',
@@ -18,11 +19,27 @@ export class LoginComponent {
   errorMessage = '';
   successMessage = '';
 
-  constructor(private auth: AuthService, private router: Router) { }
+  constructor(private authService: AuthService, private authModalService: AuthModalService, private router: Router) { }
 
   login() {
-    this.auth.login(this.email, this.password).subscribe(() => {
-      this.router.navigate(['/home']);
+ 
+    this.authService.login(this.email, this.password).subscribe({
+      next: () => {
+        this.successMessage = 'Login successful!';
+        this.authModalService.show('Login successful! Redirecting to home page...');
+
+        const user = this.authService.getCurrentUser();
+
+        const dashboardRoute = user?.role === 'ADMIN'
+        ? '/admin/users'
+        : '/profile';
+
+        this.router.navigate([dashboardRoute]);
+      },
+      error: err => {
+        this.authModalService.show('Login failed. Please try again.');
+        this.errorMessage = 'Login failed. Please try again.';
+      }
     });
   }
 

@@ -98,7 +98,9 @@
           </div>
         </td>
         <td class="px-6 py-4">
-          <a href="#" class="text-blue-600 dark:text-blue-500 hover:underline">Edit user</a>
+          <a [routerLink]="['/admin/users', user.userId]" class="text-blue-600 dark:text-blue-500 hover:underline">
+            View Details
+          </a>
         </td>
       </tr>
     </tbody>

@@ -25,4 +25,15 @@ export class UserService {
     return this.http.get<User[]>(this.apiUrl);
   }
 
+  deleteUserProfile(userId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${userId}`);
+  }
+
+  disableUserProfile(userId: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${userId}/deactivate`, 
+      {},
+      {responseType: 'text'}
+    );
+  }
+
 }
