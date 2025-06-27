@@ -87,7 +87,8 @@ export class FullMapComponent implements OnInit, AfterViewInit {
 
   loadSites() {
     if (this.site) {
-      this.filteredSites = [this.site];
+      this.allSites = [this.site];
+      this.applyFilters();
     } else {
       this.siteService.getAll().subscribe((sites) => {
         this.allSites = sites;
