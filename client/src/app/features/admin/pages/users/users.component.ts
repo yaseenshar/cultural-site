@@ -16,58 +16,14 @@ export class UsersComponent implements OnInit {
 
 
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   Math = Math;
   isDropdownOpen = false;
   filterStatus: 'ALL' | 'ACTIVE' | 'INACTIVE' = 'ALL';
   searchText = '';
-  users = [
-    {
-      id: 1,
-      name: 'Neil Sims',
-      username: 'neil.sims',
-      role: 'React Developer',
-      status: 'Online',
-      image: '/assets/img/team-1-800x800.jpg',
-    },
-    {
-      id: 2,
-      name: 'Bonnie Green',
-      username: 'bonnie',
-      role: 'Designer',
-      status: 'Online',
-      image: '/assets/img/team-2.jpg',
-    },
-    {
-      id: 3,
-      name: 'Jese Leos',
-      username: 'jese',
-      role: 'Vue JS Developer',
-      status: 'Online',
-      image: '/assets/img/team-3.jpg',
-    },
-    {
-      id: 4,
-      name: 'Thomas Lean',
-      username: 'thomes.com',
-      role: 'UI/UX Engineer',
-      status: 'Online',
-      image: '/assets/img/team-4.jpg',
-    },
-    {
-      id: 5,
-      name: 'Leslie Livingston',
-      username: 'leslie.com',
-      role: 'SEO Specialist',
-      status: 'Offline',
-      image: '/assets/img/team-5.jpg',
-    },
-  ];
+  userList: User[] = [];
 
-  userList: User[] = []; 
-
-
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(private userService: UserService, private router: Router) { }
 
   ngOnInit() {
     // Load users from the service if needed

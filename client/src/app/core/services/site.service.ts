@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { map, BehaviorSubject, Observable, of } from 'rxjs';
+import { map, BehaviorSubject, Observable, of, tap, mapTo } from 'rxjs';
 import { GroupedSites, RawSite, Site, SiteCategory } from '../../data/model/site.model';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from './auth.service';
+import { User } from '../../data/model/user.model';
 
 export interface SiteData {
   id: string;
@@ -15,20 +17,33 @@ export interface SiteData {
 
 @Injectable({ providedIn: 'root' })
 export class SiteService {
-  
-
-  constructor(private http: HttpClient) {}
 
   private readonly apiUrl = 'http://localhost:8080/sites';
   private readonly apiUrlFav = 'http://localhost:8080/users';
 
-  private favoriteIds = new Set<string>(); // 💡 track IDs only
+  public readonly favoriteIds = new Set<string>();
 
-  addfavorite(userId: string, siteId: string) : Observable<string> {
+  user: User | null = null;
+
+  constructor(private http: HttpClient, private authService: AuthService) {
+    this.user = this.authService.getCurrentUser();
+    const userId = this.user?.userId;
+
+    if (!userId) {
+      console.warn('User ID is not available');
+      return;
+    }
+
+    this.getFavorites(userId).subscribe(favorites => {
+      favorites.forEach(site => this.favoriteIds.add(site.siteId)); // Populate Set with initial favorites
+    });
+  }
+
+  addfavorite(userId: string, siteId: string): Observable<string> {
     return this.http.post(
-      `${this.apiUrlFav}/${userId}/favourites/${siteId}`, 
-      null, 
-      {responseType: 'text'}
+      `${this.apiUrlFav}/${userId}/favourites/${siteId}`,
+      null,
+      { responseType: 'text' }
     );
   }
 
@@ -75,17 +90,17 @@ export class SiteService {
     );
   }
 
-  toggleFavorite(userId: string, siteId: string): void {
+  toggleFavorite(userId: string, siteId: string): Observable<boolean> {
     if (this.favoriteIds.has(siteId)) {
-      this.deleteFavorite(userId, siteId).subscribe(() => {
-          this.favoriteIds.delete(siteId);
-      });
-
-      
+      return this.deleteFavorite(userId, siteId).pipe(
+        tap(() => this.favoriteIds.delete(siteId)),
+        map(() => false)
+      );
     } else {
-      this.addfavorite(userId, siteId).subscribe(() => {
-        this.favoriteIds.add(siteId);
-      });
+      return this.addfavorite(userId, siteId).pipe(
+        tap(() => this.favoriteIds.add(siteId)),
+        map(() => true)
+      );
     }
   }
 
@@ -104,7 +119,7 @@ export class SiteService {
         };
       })
     );
-  }  
+  }
 
   getGroupedSites(): Observable<Record<SiteCategory, Site[]>> {
     return this.http.get<Record<SiteCategory, RawSite[]>>(`${this.apiUrl}/grouped`).pipe(

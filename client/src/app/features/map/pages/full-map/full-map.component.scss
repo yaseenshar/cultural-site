@@ -1,0 +1,12 @@
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+aside {
+  min-width: 260px;
+}
+
+input[type="checkbox"]:checked {
+  accent-color: #2563eb; // tailwind blue-600
+}

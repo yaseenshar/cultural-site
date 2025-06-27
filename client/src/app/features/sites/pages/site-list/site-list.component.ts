@@ -4,10 +4,9 @@ import { RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SiteData, SiteService } from '../../../../core/services/site.service';
 import { FormsModule } from '@angular/forms';
-import { GroupedSites, Site, SITE_CATEGORIES, SiteCategory } from '../../../../data/model/site.model';
+import { Site, SITE_CATEGORIES, SiteCategory } from '../../../../data/model/site.model';
 import { User } from '../../../../data/model/user.model';
 import { AuthService } from '../../../../core/services/auth.service';
-import { FooterComponent } from '../../../../shared/footers/footer/footer.component';
 
 @Component({
   selector: 'app-site-list',
@@ -29,12 +28,11 @@ export class SiteListComponent implements OnInit {
   categories = ['Museum', 'Historic', 'Modern'];
 
   page = 1;
-  pageSize = 5;
+  pageSize = 10;
   Math = Math;
   isDropdownOpen = false;
   filterStatus: 'ALL' | 'Favourite' | 'Favourite' = 'ALL';
   searchText = '';
-
 
   allCategories: (SiteCategory | 'ALL')[] = [];
 
@@ -46,40 +44,21 @@ export class SiteListComponent implements OnInit {
 
   ngOnInit() {
     this.allCategories = ['ALL', ...SITE_CATEGORIES]; // ✅ spread here, not in template
-    this.loadfavSites();
+
     this.loadGroupedSites();
   }
 
-  loadfavSites() {
-    
+  toggleFavorite(site: Site) {
     const userId = this.user?.userId;
     if (!userId) {
       console.warn('User ID is not available');
       return;
     }
 
-    this.siteService.getFavorites(userId).subscribe(rawSites => {
-      this.favSiteList = rawSites;
-      this.loadSites();
+    this.siteService.toggleFavorite(userId, site.siteId).subscribe({
+      next: (newStatus) => site.favourite = newStatus,
+      error: () => site.favourite = !site.favourite // rollback
     });
-
-    
-  }
-
-  loadSites() {
-    this.siteService.getAll().subscribe(rawSites => {
-      this.siteList = rawSites;
-    });
-  }
-
-  toggleFavorite(siteId: string) {
-    const userId = this.user?.userId;
-    if (!userId) {
-      console.warn('User ID is not available');
-      return;
-    }
-    this.siteService.toggleFavorite(userId, siteId);
-    this.loadSites();
   }
 
   objectKeys(obj: any): string[] {
