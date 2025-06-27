@@ -39,4 +39,11 @@ class UserService(
 
         return userMapper.toResponse(updated)
     }
+
+    fun deactivateUser(id: Long) {
+        val user = userRepository.findById(id).orElseThrow { RuntimeException("User not found") }
+        user.status = User.Status.INACTIVE
+        userRepository.save(user)
+    }
+
 }

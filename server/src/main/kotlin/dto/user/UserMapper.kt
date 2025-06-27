@@ -24,6 +24,7 @@ class UserMapper {
         email = user.email,
         password = user.password,
         status = user.status,
+        role = user.role,
         createdAt = user.createdAt.toString()
     )
 }

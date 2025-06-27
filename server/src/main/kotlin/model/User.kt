@@ -19,9 +19,17 @@ data class User(
     var email: String,
     @Column(nullable = false)
     var password: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var role: Role = Role.USER,
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     var status: Status = Status.ACTIVE,
+
+    @Column(columnDefinition = "TEXT", nullable = true)
+    var refreshToken: String? = null,
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -34,6 +42,7 @@ data class User(
     @Column(nullable = false)
     val createdAt: Instant = Instant.now()
 ) {
+    enum class Role { ADMIN, USER }
     enum class Status { ACTIVE, INACTIVE }
 }
 
