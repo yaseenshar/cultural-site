@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SiteData, SiteService } from '../../../../core/services/site.service';
 import { FormsModule } from '@angular/forms';
-import { Site } from '../../../../data/model/site.model';
+import { GroupedSites, Site, SITE_CATEGORIES, SiteCategory } from '../../../../data/model/site.model';
 import { User } from '../../../../data/model/user.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FooterComponent } from '../../../../shared/footers/footer/footer.component';
@@ -35,6 +35,9 @@ export class SiteListComponent implements OnInit {
   filterStatus: 'ALL' | 'Favourite' | 'Favourite' = 'ALL';
   searchText = '';
 
+
+  allCategories: (SiteCategory | 'ALL')[] = [];
+
   user: User | null = null;
 
   constructor(private authService: AuthService, private siteService: SiteService) {
@@ -42,7 +45,9 @@ export class SiteListComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.allCategories = ['ALL', ...SITE_CATEGORIES]; // ✅ spread here, not in template
     this.loadfavSites();
+    this.loadGroupedSites();
   }
 
   loadfavSites() {
@@ -74,11 +79,6 @@ export class SiteListComponent implements OnInit {
       return;
     }
     this.siteService.toggleFavorite(userId, siteId);
-    this.loadSites();
-  }
-
-  filterByCategory(category: string) {
-    this.selectedCategory = category;
     this.loadSites();
   }
 
@@ -135,4 +135,27 @@ export class SiteListComponent implements OnInit {
     }
   }
 
+
+  groupedSites: Record<SiteCategory, Site[]> = {
+    MUSEUM: [],
+    RESTAURANT: [],
+    ARTWORK: [],
+    THEATRE: []
+  };
+
+  loadGroupedSites() {
+    this.siteService.getGroupedSites().subscribe(grouped => {
+      this.groupedSites = grouped;
+      this.siteList = this.flattenSites(); // Load all
+    });
+  }
+
+  filterByCategory(category: SiteCategory) {
+    this.selectedCategory = category;
+    this.siteList = this.groupedSites[category];
+  }
+
+  flattenSites(): Site[] {
+    return Object.values(this.groupedSites).flat();
+  }
 }

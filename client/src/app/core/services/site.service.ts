@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { map, BehaviorSubject, Observable, of } from 'rxjs';
-import { RawSite, Site } from '../../data/model/site.model';
+import { GroupedSites, RawSite, Site, SiteCategory } from '../../data/model/site.model';
 import { HttpClient } from '@angular/common/http';
 
 export interface SiteData {
@@ -28,7 +28,8 @@ export class SiteService {
     return this.http.post(
       `${this.apiUrlFav}/${userId}/favourites/${siteId}`, 
       null, 
-      {responseType: 'text'});
+      {responseType: 'text'}
+    );
   }
 
   deleteFavorite(userId: string, siteId: string): Observable<any> {
@@ -86,4 +87,68 @@ export class SiteService {
       });
     }
   }
+
+  getSiteById(siteId: string): Observable<Site | null> {
+    return this.http.get<RawSite>(`${this.apiUrl}/${siteId}`).pipe(
+      map(rawSite => {
+        if (!rawSite) return null;
+        return {
+          siteId: rawSite.siteId,
+          id: rawSite.id,
+          type: rawSite.type,
+          favourite: this.favoriteIds.has(rawSite.siteId),
+          properties: typeof rawSite.properties === 'string' ? JSON.parse(rawSite.properties) : rawSite.properties,
+          geometry: typeof rawSite.geometry === 'string' ? JSON.parse(rawSite.geometry) : rawSite.geometry,
+        };
+      })
+    );
+  }  
+
+  getGroupedSites(): Observable<Record<SiteCategory, Site[]>> {
+    return this.http.get<Record<SiteCategory, RawSite[]>>(`${this.apiUrl}/grouped`).pipe(
+      map(groupedRaw => {
+        const result: Record<SiteCategory, Site[]> = {
+          MUSEUM: [],
+          ARTWORK: [],
+          RESTAURANT: [],
+          THEATRE: [],
+        };
+
+        const knownCategories: SiteCategory[] = ['MUSEUM', 'RESTAURANT', 'ARTWORK', 'THEATRE'];
+
+        (Object.keys(groupedRaw) as string[]).forEach((key: string) => {
+          if (!knownCategories.includes(key as SiteCategory)) return;
+          const category = key as SiteCategory;
+          result[category] = groupedRaw[category].map((site: RawSite): Site => ({
+            siteId: site.siteId,
+            id: site.id,
+            type: site.type,
+            favourite: this.favoriteIds.has(site.siteId),
+            category: category,
+            properties: typeof site.properties === 'string' ? JSON.parse(site.properties) : site.properties,
+            geometry: typeof site.geometry === 'string' ? JSON.parse(site.geometry) : site.geometry,
+          }));
+        });
+
+        return result;
+      })
+    );
+  }
+
+  getSitesByCategory(category: SiteCategory): Observable<Site[]> {
+    return this.http.get<RawSite[]>(`${this.apiUrl}/category/${category}`).pipe(
+      map(sites =>
+        sites.map(site => ({
+          siteId: site.siteId,
+          id: site.id,
+          type: site.type,
+          category,
+          favourite: this.favoriteIds.has(site.siteId),
+          properties: JSON.parse(site.properties),
+          geometry: JSON.parse(site.geometry),
+        }))
+      )
+    );
+  }
+
 }

@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
 })
 export class NavbarComponent implements OnInit, OnDestroy {
 
+  isMenuOpen = false;
   user: any = null;
   private userSub?: Subscription;
 
@@ -24,8 +25,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   }
 
-  isMenuOpen = false;
-
   showMenu() {
     this.isMenuOpen = true;
   }
@@ -34,6 +33,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.isMenuOpen = false;
   }
   
+  get isAdmin(): boolean {
+    return this.user?.role === 'ADMIN';
+  }
+
+  get isUser(): boolean {
+    return this.user?.role === 'USER';
+  }
 
   logout() {
     this.auth.logout();
