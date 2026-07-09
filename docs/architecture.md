@@ -11,7 +11,7 @@ flowchart LR
       FE --> MAP[Google Maps UI]
     end
 
-    INT -->|****** API[Spring Boot API]
+    INT -->|JWT Token| API[Spring Boot API]
 
     subgraph Backend
       API --> AUTH[AuthController + AuthService]

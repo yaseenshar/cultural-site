@@ -34,9 +34,15 @@ The repository contains two main applications:
 - Map exploration through Google Maps integration.
 
 ## Architecture
+High-level architecture diagram:
+
+- [docs/images/architecture.png](docs/images/architecture.png)
+
+
 High-level architecture diagram (Mermaid):
 
 - [docs/architecture.md](docs/architecture.md)
+
 
 ## Technology Stack
 
