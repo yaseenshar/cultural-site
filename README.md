@@ -1,151 +1,194 @@
-# client
+# Cultural Site Explorer
 
-# 🏛️ Cultural Sites Explorer (Angular 18+)
+Production-ready documentation for the **Cultural Site Explorer** platform.
 
-An Angular 18+ standalone web application built to explore, view, and manage cultural sites for a city — featuring JWT authentication, map integration, and clean Tailwind-styled UI.
+Cultural Site Explorer is a full-stack application for discovering and managing cultural locations (museums, theatres, restaurants, artwork points), with authenticated user journeys, favorites management, and map-based exploration.
 
-![screenshot](public/screenshots/landing.png)
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Key Capabilities](#key-capabilities)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Repository Structure](#repository-structure)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+- [API Surface](#api-surface)
+- [Security Model](#security-model)
+- [Testing](#testing)
+- [Operational Notes](#operational-notes)
+- [License](#license)
 
----
+## Project Overview
+The repository contains two main applications:
 
-## 🚀 Features
+- **Client**: Angular 18 application (with SSR scaffolding) for web UI, authentication flows, profile views, admin views, map visualization, and favorites.
+- **Server**: Kotlin + Spring Boot REST API for authentication, user management, site catalog APIs, and favorites persistence in PostgreSQL.
 
-- ✅ User Registration, Login & Logout
-- ✅ JWT + Refresh Token Authentication
-- ✅ Protected Routes with Route Guards
-- ✅ Dynamic Navbar (reactive to login)
-- ✅ User Profile View & Edit
-- ✅ Cultural Sites Listing
-- ✅ Interactive Google Maps Integration
-- ✅ Favorite Sites Tracking
-- ✅ Filtering by category
-- ✅ Responsive Design (Tailwind CSS)
+## Key Capabilities
+- JWT-based signup/login/refresh flows.
+- Role-based access controls (USER/ADMIN) across API and client routes.
+- Cultural sites listing, grouping, category filtering, and details.
+- User favorites add/remove/list flows.
+- Profile viewing and profile update journeys.
+- Admin-only user listing and user deactivation.
+- Map exploration through Google Maps integration.
 
----
+## Architecture
+High-level architecture diagram:
 
-## 🧰 Tech Stack
+- [docs/images/architecture.png](docs/images/architecture.png)
 
-- **Angular 18** (Standalone Components)
-- **RxJS** for reactive flows
-- **Tailwind CSS v3+**
-- **Google Maps API**
-- **Popper.js** for dynamic menus
-- **@angular/google-maps** (optional)
-- **JWT** with refresh strategy
-- **Custom API backend** (localhost:8080)
 
----
+High-level architecture diagram (Mermaid):
 
-## 🛠️ Installation
+- [docs/architecture.md](docs/architecture.md)
 
-### 1. Clone the repository
 
-```bash
-git clone https://github.com/your-username/cultural-site-explorer.git
-cd cultural-site-explorer
+## Technology Stack
+
+### Frontend (client)
+- Angular 18 (standalone bootstrap + lazy-loaded feature modules)
+- Angular Router, HttpClient, RxJS
+- Angular Material + Tailwind CSS
+- Google Maps JavaScript API (`@angular/google-maps`)
+
+### Backend (server)
+- Kotlin (JVM 17)
+- Spring Boot 3 (Web, Security, Data JPA, Validation)
+- PostgreSQL
+- JJWT for token generation/validation
+- Springdoc OpenAPI UI
+
+## Repository Structure
+```text
+.
+├── client/                     # Angular application
+│   ├── src/app/core/           # Services, guards, interceptor
+│   ├── src/app/features/       # Feature modules (auth, home, sites, map, profile, admin)
+│   ├── src/app/shared/         # Shared UI components/layout/errors
+│   └── public/                 # Static assets
+├── server/                     # Kotlin Spring Boot API
+│   ├── src/main/kotlin/
+│   │   ├── config/             # Security/JWT/CORS/Swagger config
+│   │   ├── controller/         # REST controllers
+│   │   ├── service/            # Business logic
+│   │   ├── repository/         # JPA repositories
+│   │   ├── model/              # JPA entities
+│   │   └── dto/                # Request/response DTOs + mappers
+│   └── src/main/resources/     # application.yaml and logging config
+└── docs/
+    └── architecture.md         # High-level system diagram
 ```
 
-### 2. Install dependencies
+## Getting Started
 
+### Prerequisites
+- Node.js 18+
+- npm 9+
+- Java 17+
+- PostgreSQL 14+
+
+### 1) Start PostgreSQL
+Create database and credentials matching `server/src/main/resources/application.yaml`:
+
+- Database: `cultural-explorer`
+- Username: `postgres`
+- Password: `password`
+- Host: `localhost`
+- Port: `5432`
+
+### 2) Run backend API
 ```bash
+cd /home/runner/work/cultural-site/cultural-site/server
+./gradlew bootRun
+```
+API default base URL: `http://localhost:8080`
+
+### 3) Run frontend
+```bash
+cd /home/runner/work/cultural-site/cultural-site/client
 npm install
+npm start
 ```
+Web app default URL: `http://localhost:4200`
 
-### 3. Start development server
+## Configuration
 
+### Backend
+Main config file:
+- `/home/runner/work/cultural-site/cultural-site/server/src/main/resources/application.yaml`
+
+Config groups:
+- `spring.datasource.*`
+- `spring.jpa.*`
+- `jwt.*`
+- `management.*`
+
+### Frontend
+API endpoints are currently hardcoded in services:
+- `AuthService` → `http://localhost:8080/auth`
+- `SiteService` → `http://localhost:8080/sites` and `/users/.../favourites`
+- `UserService` → `http://localhost:8080/users`
+
+For production, move these to environment-based configuration.
+
+## API Surface
+
+### Auth
+- `POST /auth/signup`
+- `POST /auth/login`
+- `POST /auth/refresh`
+
+### Sites
+- `GET /sites`
+- `GET /sites/grouped`
+- `GET /sites/filter?category={CATEGORY}`
+- `GET /sites/{id}`
+- `GET /sites/type/{type}`
+- `POST /sites` (ADMIN)
+- `POST /sites/bulk` (ADMIN)
+- `POST /sites/collection` (ADMIN)
+
+### Users
+- `GET /users` (ADMIN)
+- `GET /users/{id}`
+- `GET /users/status/{status}`
+- `PUT /users/{id}`
+- `PUT /users/{id}/deactivate`
+
+### Favourites
+- `POST /users/{userId}/favourites/{siteId}`
+- `DELETE /users/{userId}/favourites/{siteId}`
+- `GET /users/{userId}/favourites`
+
+OpenAPI/Swagger UI:
+- `http://localhost:8080/swagger-ui/index.html`
+
+## Security Model
+- Stateless JWT authorization enforced by Spring Security filter chain.
+- `/auth/**` and Swagger endpoints are publicly accessible.
+- All other backend endpoints require authentication.
+- Method-level authorization (`@PreAuthorize`) is used for admin-only write operations.
+- Client-side `AuthGuard` and `AdminGuard` protect restricted views.
+
+## Testing
+
+### Backend tests
 ```bash
-npm run start
+cd /home/runner/work/cultural-site/cultural-site/server
+./gradlew test
 ```
 
-Frontend will run at:
-👉 http://localhost:4200/
-
-## 📦 Folder Structure (Key Parts)
-
-```
-src/
-├── app/
-│   ├── core/               # Services, interceptors, guards
-│   ├── features/           # Feature modules (auth, profile, sites)
-│   ├── shared/             # Reusable components (navbar, footer, popovers)
-│   ├── data/               # Interfaces, models
-│   ├── app.config.ts       # Standalone app setup
-│   └── main.ts             # Entry point
-├── public/                 # Static assets if using public folder
-└── styles.scss             # TailwindCSS entry
+### Frontend tests
+```bash
+cd /home/runner/work/cultural-site/cultural-site/client
+npm test
 ```
 
-## 🔐 API Configuration
-Make sure your backend (e.g. Spring Boot, ktor) is running at:
+## Operational Notes
+- Current frontend integrates Google Maps via script loader.
+- For production hardening, externalize all secrets/keys and runtime URLs via environment variables.
+- Use reverse proxy/API gateway + TLS termination for internet-facing deployments.
 
-http://localhost:8080/
-
-Enable CORS for Angular frontend at http://localhost:4200.
-
-
-💡 Useful Scripts
-
-| Script          | Description                |
-| --------------- | -------------------------- |
-| `npm run start` | Starts dev server          |
-| `npm run build` | Builds production output   |
-| `npm run lint`  | Lints codebase with ESLint |
-
-
-📷 Screenshots
-Add your own screenshots to public/screenshots/ and reference them here:
-
-- Home Page
-- Profile Page
-- Map View
-
-# server
-
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
-
-Here are some useful links to get you started:
-
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need
-  to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
-
-## Features
-
-Here's a list of features included in this project:
-
-| Name                                                                   | Description                                                                        |
-|------------------------------------------------------------------------|------------------------------------------------------------------------------------|
-| [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
-| [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
-| [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
-
-## Building & Running
-
-To build or run the project, use one of the following tasks:
-
-| Task                          | Description                                                          |
-|-------------------------------|----------------------------------------------------------------------|
-| `./gradlew test`              | Run the tests                                                        |
-| `./gradlew build`             | Build everything                                                     |
-| `buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `publishImageToLocalRegistry` | Publish the docker image locally                                     |
-| `run`                         | Run the server                                                       |
-| `runDocker`                   | Run using the local docker image                                     |
-
-If the server starts successfully, you'll see the following output:
-
-```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
-```
-
----
-
-
-
-
-📄 License
-MIT License.
-Feel free to fork and contribute!
+## License
+MIT License (see [LICENSE](LICENSE)).
